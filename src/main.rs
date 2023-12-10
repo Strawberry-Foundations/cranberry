@@ -1,6 +1,11 @@
 #![allow(deprecated)]
+#![warn(
+    clippy::all,
+    clippy::nursery,
+    clippy::pedantic,
+)]
 
-use std::io::{Read, Write};
+use std::io::Write;
 use crate::command::Command;
 use clap::Parser;
 use owo_colors::OwoColorize;
@@ -27,10 +32,10 @@ async fn s2c_t(mut r_server: ReadHalf<TcpStream>) {
                 }
                 let read = &buffer[..n_bytes];
                 let mut msg_str = String::from_utf8_lossy(read).to_string();
-                while !msg_str.ends_with("}") {
+                while !msg_str.ends_with('}') {
                     let mut tmp = [0u8; 2048];
                     let n = r_server.read(&mut tmp).await.unwrap();
-                    msg_str.push_str(&String::from_utf8_lossy(&tmp[..n]).to_string());
+                    msg_str.push_str(&String::from_utf8_lossy(&tmp[..n]));
                 }
                 let msg: Value = match serde_json::from_str(&msg_str) {
                     Ok(ok) => ok,
@@ -75,14 +80,8 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
         Command {
             name: "randchars",
             handler: |a| {
-                let num_chars: u32 = match a.get(0) {
-                    Some(s) => s.parse().unwrap_or(600),
-                    None => 600,
-                };
-                let num_messages: u64 = match a.get(1) {
-                    Some(s) => s.parse().unwrap_or(1),
-                    None => 1,
-                };
+                let num_chars = a.first().map_or(600, |s| s.parse().unwrap_or(600));
+                let num_messages = a.get(1).map_or(1, |s| s.parse().unwrap_or(1));
                 let mut res = vec![];
                 for _ in 0..num_messages {
                     let mut bytes = String::new();
@@ -103,18 +102,16 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
                     return vec![];
                 }
                 let args = cli::Args::parse();
-                let user = a.get(0).unwrap();
+                let user = a.first().unwrap();
                 let pass = a.get(1).unwrap();
                 let logins: u64 = a.get(2).unwrap_or(&"10".to_string()).parse().unwrap_or(10);
                 (0..logins).into_par_iter().for_each(|_| {
                     let mut stream = std::net::TcpStream::connect((args.addr.clone(), args.port)).unwrap();
                     sleep_ms(230);
-                    stream.write(user.as_bytes()).unwrap();
+                    stream.write_all(user.as_bytes()).unwrap();
                     sleep_ms(230);
-                    stream.write(pass.as_bytes()).unwrap();
+                    stream.write_all(pass.as_bytes()).unwrap();
                     sleep_ms(300);
-                    let mut buf = [0u8; 4096];
-                    stream.read(&mut buf).unwrap();
                 });
                 vec![]
             },
@@ -128,16 +125,16 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
         if read_str.is_empty() {
             continue;
         }
-        let f = read_str.split(" ").nth(0).unwrap();
+        let f = read_str.split(' ').next().unwrap();
         let cmd_filt = cmds.iter().filter(|c| c.name == f);
         for cmd in cmd_filt.clone() {
-            let args: Vec<String> = read_str.split(" ").map(String::from).skip(1).collect();
+            let args: Vec<String> = read_str.split(' ').map(String::from).skip(1).collect();
             for mut m in (cmd.handler)(args) {
                 while m.len() > 4096 {
                     m.pop();
                 }
                 w_server
-                    .write_all(&m.as_bytes())
+                    .write_all(m.as_bytes())
                     .await
                     .expect("Failed to write to stream");
                 sleep(Duration::from_millis(50)).await;
@@ -146,7 +143,7 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
         if cmd_filt.count() > 0 {
             continue;
         }
-        let read_str = read_str.trim_end_matches("\n");
+        let read_str = read_str.trim_end_matches('\n');
         w_server
             .write_all(read_str.as_bytes())
             .await
