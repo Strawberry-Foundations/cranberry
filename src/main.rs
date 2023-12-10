@@ -14,7 +14,9 @@ use std::process::exit;
 use std::thread::sleep_ms;
 use std::time::Duration;
 use rayon::prelude::*;
-use tokio::io::{split, stdin, AsyncReadExt, AsyncWriteExt, ReadHalf, WriteHalf};
+use rustyline::DefaultEditor;
+use rustyline::error::ReadlineError;
+use tokio::io::{split, AsyncReadExt, AsyncWriteExt, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
 
@@ -123,18 +125,22 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
             },
         },
     ];
-    let mut buff = [0u8; 2048];
+    let mut rl = DefaultEditor::new().unwrap();
     loop {
-        let n = stdin().read(&mut buff).await.expect("Failed to read line");
-        let read_str = String::from_utf8(buff[..n].to_vec()).unwrap();
-        let read_str = read_str.trim().to_string();
-        if read_str.is_empty() {
-            continue;
-        }
-        let f = read_str.split(' ').next().unwrap();
+        let line = match rl.readline("") {
+            Ok(l) => l,
+            Err(ReadlineError::Eof) => exit(0),
+            Err(ReadlineError::Interrupted) => {
+                w_server.write_all("/exit".as_bytes()).await.expect("Failed to write to stream");
+                sleep(Duration::from_millis(400)).await;
+                exit(0);
+            },
+            Err(why) => panic!("{why}")
+        };
+        let f = line.split(' ').next().unwrap();
         let cmd_filt = cmds.iter().filter(|c| c.name == f);
         for cmd in cmd_filt.clone() {
-            let args: Vec<String> = read_str.split(' ').map(String::from).skip(1).collect();
+            let args: Vec<String> = line.split(' ').map(String::from).skip(1).collect();
             for mut m in (cmd.handler)(args) {
                 while m.len() > 4096 {
                     m.pop();
@@ -149,7 +155,7 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
         if cmd_filt.count() > 0 {
             continue;
         }
-        let read_str = read_str.trim_end_matches('\n');
+        let read_str = line.trim_end_matches('\n');
         w_server
             .write_all(read_str.as_bytes())
             .await
