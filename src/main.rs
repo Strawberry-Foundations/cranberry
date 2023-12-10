@@ -128,7 +128,10 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
     let mut rl = DefaultEditor::new().unwrap();
     loop {
         let line = match rl.readline("") {
-            Ok(l) => l,
+            Ok(l) => {
+                rl.add_history_entry(&l).unwrap();
+                l
+            },
             Err(ReadlineError::Eof) => exit(0),
             Err(ReadlineError::Interrupted) => {
                 w_server.write_all("/exit".as_bytes()).await.expect("Failed to write to stream");
