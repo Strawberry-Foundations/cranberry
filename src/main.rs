@@ -22,58 +22,64 @@ mod cli;
 mod command;
 
 async fn s2c_t(mut r_server: ReadHalf<TcpStream>) {
-    let mut buffer = [0u8; 8000];
     loop {
-        match r_server.read(&mut buffer).await {
-            Ok(n_bytes) => {
-                if n_bytes == 0 {
-                    println!("Server closed connection, exiting");
-                    exit(0);
-                }
-                let read = &buffer[..n_bytes];
-                let mut msg_str = String::from_utf8_lossy(read).to_string();
-                while !msg_str.ends_with('}') {
-                    let mut tmp = [0u8; 2048];
-                    let n = r_server.read(&mut tmp).await.unwrap();
-                    msg_str.push_str(&String::from_utf8_lossy(&tmp[..n]));
-                }
-                let msg: Value = match serde_json::from_str(&msg_str) {
-                    Ok(ok) => ok,
-                    Err(e) => {
-                        println!("{} error desering packet ({msg_str}): {e}", "[err]".red());
-                        continue;
-                    }
-                };
-                match msg["message_type"].as_str() {
-                    Some("system_message") => println!(
-                        "{} {}",
-                        "[sys]".bright_green(),
-                        msg["message"]["content"].as_str().unwrap()
-                    ),
-                    Some("stbchat_backend") => {}
-                    Some("user_message") => println!(
-                        "{} {} ({}) -> {}",
-                        "[msg]".bright_blue(),
-                        msg["username"].as_str().unwrap(),
-                        msg["nickname"].as_str().unwrap(),
-                        msg["message"]["content"].as_str().unwrap()
-                    ),
-                    None => unreachable!(),
-                    m => println!(
-                        "{} Unimplemented packet {} - full packet: {}",
-                        "[uimp]".red(),
-                        m.unwrap(),
-                        msg_str
-                    ),
-                }
+        let mut buff = [0u8; 1];
+        let mut str_buf = String::new();
+        let mut wraps = 0;
+        loop {
+            let n_bytes = r_server.read(&mut buff).await.expect("Failed to read from stream");
+            if n_bytes == 0 {
+                println!("Server closed connection, exiting");
+                exit(0);
             }
-
-            Err(err) => {
-                panic!("{err}");
+            match buff[0] as char {
+                '{' => {
+                    wraps += 1;
+                    str_buf.push('{');
+                }
+                '}' => {
+                    wraps -= 1;
+                    str_buf.push('}');
+                }
+                c => str_buf.push(c)
             }
+            if wraps == 0 {
+                break
+            }
+            //dbg!(wraps, &str_buf);
+        }
+        let msg: Value = match serde_json::from_str(&str_buf) {
+            Ok(ok) => ok,
+            Err(e) => {
+                println!("{} error desering packet ({str_buf}): {e}", "[err]".red());
+                continue;
+            }
+        };
+        match msg["message_type"].as_str() {
+            Some("system_message") => println!(
+                "{} {}",
+                "[sys]".bright_green(),
+                msg["message"]["content"].as_str().unwrap()
+            ),
+            Some("stbchat_backend") => {}
+            Some("user_message") => println!(
+                "{} {} ({}) -> {}",
+                "[msg]".bright_blue(),
+                msg["username"].as_str().unwrap(),
+                msg["nickname"].as_str().unwrap(),
+                msg["message"]["content"].as_str().unwrap()
+            ),
+            None => unreachable!(),
+            m => println!(
+                "{} Unimplemented packet {} - full packet: {}",
+                "[uimp]".red(),
+                m.unwrap(),
+                str_buf
+            ),
         }
     }
 }
+
 
 async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
     let cmds = vec![
