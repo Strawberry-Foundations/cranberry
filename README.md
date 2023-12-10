@@ -7,7 +7,7 @@ experimental chat client for strawberry-chat, written in Rust
 
 * 🪨 **Stable**
 
-## Usage
+## 🔍 Usage
 Download the latest build from GitHub and run it using
 
 **Linux & macOS**
@@ -19,6 +19,21 @@ Download the latest build from GitHub and run it using
 ```powershell
 ".\cranberry-chat.exe" --addr *ip here* -p *port here*
 ```
-## Compiling
+## 🏗️ Building
 
-...
+**Building**
+```
+cargo build
+```
+
+**Running**
+```
+cargo run
+```
+
+**Publishing**
+```
+cargo build --release
+```
+
+The compiled executable should be under `./target/{RELEASE_TYPE}/cranberry-chat`
