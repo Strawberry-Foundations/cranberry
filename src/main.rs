@@ -108,11 +108,11 @@ async fn c2s_t(mut w_server: WriteHalf<TcpStream>) {
                 let logins: u64 = a.get(2).unwrap_or(&"10".to_string()).parse().unwrap_or(10);
                 (0..logins).into_par_iter().for_each(|_| {
                     let mut stream = std::net::TcpStream::connect((args.addr.clone(), args.port)).unwrap();
-                    sleep_ms(500);
+                    sleep_ms(230);
                     stream.write(user.as_bytes()).unwrap();
-                    sleep_ms(500);
+                    sleep_ms(230);
                     stream.write(pass.as_bytes()).unwrap();
-                    sleep_ms(500);
+                    sleep_ms(300);
                     let mut buf = [0u8; 4096];
                     stream.read(&mut buf).unwrap();
                 });
