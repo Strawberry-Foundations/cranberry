@@ -40,18 +40,18 @@ pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>) {
 
 
 impl App {
-    pub fn move_cursor_left(&mut self, amount: usize) {
-        let moved = self.cursor_pos.saturating_sub(amount);
+    pub fn move_cursor_left(&mut self) {
+        let moved = self.cursor_pos.saturating_sub(1);
         self.cursor_pos = moved.clamp(0, self.input.len());
     }
-    pub fn move_cursor_right(&mut self, amount: usize) {
-        let moved = self.cursor_pos + amount;
+    pub fn move_cursor_right(&mut self) {
+        let moved = self.cursor_pos + 1;
         self.cursor_pos = moved.clamp(0, self.input.len());
     }
 
     pub fn enter(&mut self, ch: char) {
         self.input.insert(self.cursor_pos, ch);
-        self.move_cursor_right(1);
+        self.move_cursor_right();
     }
 
     pub fn delete(&mut self) {
@@ -59,7 +59,7 @@ impl App {
             return;
         }
         self.input.remove(self.cursor_pos - 1);
-        self.move_cursor_left(1);
+        self.move_cursor_left();
     }
 
     pub fn reset_cursor(&mut self) {
