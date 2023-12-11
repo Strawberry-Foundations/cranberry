@@ -19,8 +19,9 @@ pub fn initialize_panic_handler() {
     std::panic::set_hook(Box::new(|panic_info| {
         execute!(std::io::stderr(), crossterm::terminal::LeaveAlternateScreen).unwrap();
         disable_raw_mode().unwrap();
+        Terminal::new(CrosstermBackend::new(stdout())).unwrap().show_cursor().unwrap();
         Settings::auto()
-            .most_recent_first(false)
+            .most_recent_first(true)
             .lineno_suffix(true)
             .create_panic_handler()(panic_info);
     }));
@@ -39,5 +40,6 @@ fn main() -> io::Result<()> {
     app.run(&mut terminal);
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     disable_raw_mode()?;
+    terminal.show_cursor()?;
     Ok(())
 }

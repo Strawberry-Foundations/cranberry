@@ -13,7 +13,7 @@ use std::time::Duration;
 
 #[derive(Default)]
 pub struct App {
-    pub input: String,
+    pub input: Vec<char>,
     pub cursor_pos: usize,
     pub messages: Vec<String>,
     pub message_queue: Vec<String>,

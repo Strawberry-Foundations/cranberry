@@ -4,6 +4,8 @@ use serde_json::Value;
 use std::io::Write;
 use std::net::TcpStream;
 use std::sync::{Arc, RwLock};
+use std::thread::sleep;
+use std::time::Duration;
 use crate::app::App;
 
 pub fn handler_s2c(app: Arc<RwLock<App>>, stream: TcpStream) {
@@ -56,5 +58,6 @@ pub fn handler_c2s(app: Arc<RwLock<App>>, mut stream: TcpStream) {
                 .expect("Failed to write to stream");
             app.write().unwrap().message_queue.pop();
         }
+        sleep(Duration::from_millis(40));
     }
 }
