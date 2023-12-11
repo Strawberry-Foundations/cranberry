@@ -31,6 +31,7 @@ pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>) {
             ListItem::new(line)
         })
         .collect();
+    drop(state);
     let messages =
         List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
     frame.render_widget(messages, chunks[2]);

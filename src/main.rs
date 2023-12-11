@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::nursery)]
+
 mod app;
 mod cli;
 mod net_handler;

@@ -50,14 +50,11 @@ pub fn handler_c2s(app: Arc<RwLock<App>>, mut stream: TcpStream) {
         let state = app.read().unwrap();
         let msgs = state.message_queue.clone();
         drop(state);
-        match msgs.last() {
-            Some(msg) => {
-                stream
-                    .write_all(msg.as_bytes())
-                    .expect("Failed to write to stream");
-                app.write().unwrap().message_queue.pop();
-            }
-            None => {}
+        if let Some(msg) = msgs.last() {
+            stream
+                .write_all(msg.as_bytes())
+                .expect("Failed to write to stream");
+            app.write().unwrap().message_queue.pop();
         }
     }
 }
