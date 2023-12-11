@@ -29,8 +29,8 @@ pub fn initialize_panic_handler() {
 
 fn main() -> io::Result<()> {
     initialize_panic_handler();
-    enable_raw_mode()?;
     Args::parse();
+    enable_raw_mode()?;
     let mut stdout = stdout();
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
