@@ -2,9 +2,17 @@ use ansi_to_tui::IntoText;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 use std::sync::{Arc, RwLock};
-use crate::app::App;
+use tui_textarea::TextArea;
+use crate::app::{App, SelectServerScreen};
 
-pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>) {
+pub fn select_server_ui(frame: &mut Frame, select_server: Arc<RwLock<SelectServerScreen>>) {
+    todo!();
+    let mut size = frame.size();
+    size.height /= 2;
+    size.width /= 2;
+}
+
+pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>, text_area: &mut TextArea) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -18,8 +26,7 @@ pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>) {
     frame.render_widget(esc_info, chunks[0]);
 
     let state = app.read().unwrap();
-    let input = Paragraph::new(state.input.iter().collect::<String>())
-        .block(Block::default().borders(Borders::ALL).title("Message"));
+    let input = text_area.widget();
     frame.render_widget(input, chunks[1]);
 
     let messages: Vec<ListItem> = state
@@ -40,35 +47,7 @@ pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>) {
 
 
 impl App {
-    pub fn move_cursor_left(&mut self) {
-        let moved = self.cursor_pos.saturating_sub(1);
-        self.cursor_pos = moved.clamp(0, self.input.len());
-    }
-    pub fn move_cursor_right(&mut self) {
-        let moved = self.cursor_pos + 1;
-        self.cursor_pos = moved.clamp(0, self.input.len());
-    }
-
-    pub fn enter(&mut self, ch: char) {
-        self.input.insert(self.cursor_pos, ch);
-        self.move_cursor_right();
-    }
-
-    pub fn delete(&mut self) {
-        if self.cursor_pos == 0 {
-            return;
-        }
-        self.input.remove(self.cursor_pos - 1);
-        self.move_cursor_left();
-    }
-
-    pub fn reset_cursor(&mut self) {
-        self.cursor_pos = 0;
-    }
-
-    pub fn send(&mut self) {
-        self.message_queue.push(self.input.iter().collect());
-        self.input.clear();
-        self.reset_cursor();
+    pub fn send(&mut self, msg: &str) {
+        self.message_queue.push(msg.to_string());
     }
 }
