@@ -12,6 +12,8 @@ pub fn handler_s2c(app: Arc<RwLock<App>>, stream: TcpStream) {
     let deser = serde_json::Deserializer::from_reader(stream);
     let messages_iter = deser.into_iter::<Value>();
     for message in messages_iter {
+        let now = chrono::Local::now();
+        let fmt = now.format("- %H:%M:%S |");
         match message {
             Err(e) => app.write().unwrap().messages.push(format!(
                 "{} Error deserializing packet - {}",
@@ -21,13 +23,13 @@ pub fn handler_s2c(app: Arc<RwLock<App>>, stream: TcpStream) {
             Ok(msg) => {
                 let to_push = match msg["message_type"].as_str() {
                     Some("system_message") => Some(format!(
-                        "{} {}",
+                        "{} {fmt} {}",
                         "[sys]".bright_green(),
                         msg["message"]["content"].as_str().unwrap()
                     )),
                     Some("stbchat_backend") => None,
                     Some("user_message") => Some(format!(
-                        "{} {} ({}) -> {}",
+                        "{} {fmt} {} ({}) -> {}",
                         "[msg]".bright_blue(),
                         msg["username"].as_str().unwrap(),
                         msg["nickname"].as_str().unwrap(),

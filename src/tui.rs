@@ -1,6 +1,6 @@
 use ansi_to_tui::IntoText;
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
+use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph};
 use std::sync::{Arc, RwLock};
 use tui_textarea::TextArea;
 use crate::app::{App, SelectServerScreen};
@@ -28,26 +28,35 @@ pub fn ui(frame: &mut Frame, app: Arc<RwLock<App>>, text_area: &mut TextArea) {
     let state = app.read().unwrap();
     let input = text_area.widget();
     frame.render_widget(input, chunks[1]);
-
+    let mut list_state = ListState::default();
+    let selected = app.read().unwrap().selected;
+    list_state.select(selected);
+    let len = state.messages.len();
     let messages: Vec<ListItem> = state
         .messages
-        .iter()
+        .clone()
+        .into_iter()
+        .enumerate()
         .rev()
-        .map(|m| {
+        .map(|(i, mut m)| {
+            if selected == Some(len-i) {
+                m = format!("> {m}");
+            }
             let line = m.into_text().unwrap();
             ListItem::new(line)
         })
         .collect();
     drop(state);
+
     let messages =
         List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
-    frame.render_widget(messages, chunks[2]);
+    frame.render_stateful_widget(messages, chunks[2], &mut list_state);
 }
 
 
 
 impl App {
-    pub fn send(&mut self, msg: &str) {
-        self.message_queue.push(msg.to_string());
+    pub fn send(&mut self, msg: String) {
+        self.message_queue.push(msg);
     }
 }

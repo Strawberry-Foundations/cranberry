@@ -4,6 +4,7 @@ mod app;
 mod cli;
 mod net_handler;
 mod tui;
+mod commands;
 
 use crate::cli::Args;
 use better_panic::Settings;
@@ -30,6 +31,7 @@ pub fn initialize_panic_handler() {
 fn main() -> io::Result<()> {
     initialize_panic_handler();
     Args::parse();
+    rayon::ThreadPoolBuilder::new().num_threads(3).build_global().unwrap();
     enable_raw_mode()?;
     let mut stdout = stdout();
     execute!(stdout, EnterAlternateScreen)?;
