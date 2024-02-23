@@ -1,24 +1,23 @@
 [package]
-name = "cranberry-chat"
-version = "0.1.0"
+name = "cranberry"
+version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[profile.release]
-panic = "abort"
-strip = true
-opt-level = 'z'
 
 [dependencies]
-ansi-to-tui = "3.1.0"
-better-panic = "0.3.0"
-clap = { version = "4.4.11", features = ["derive"] }
+ratatui = "0.26.1"
 crossterm = "0.27.0"
-owo-colors = "3.5.0"
-ratatui = "0.24.0"
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
 tui-textarea = "0.4.0"
-fastrand = "2.0.1"
-rayon = "1.8.0"
-chrono = "0.4.31"
+stblib = { path = "/home/julian/Projekte/stblib-rust", features = ["stbchat-sync"] }
+tokio = { version = "1.36.0", features = ["full"] }
+ansi-to-tui = "4.0.0"
+
+[profile.release]
+opt-level = 'z'
+strip = true
+lto = true
+panic = "abort"
+
+[profile.dev]
+panic = "abort"

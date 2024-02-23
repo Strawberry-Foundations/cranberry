@@ -1,47 +1,38 @@
-#![warn(clippy::all, clippy::nursery)]
+use std::io::{stdout, Result};
+use std::env;
 
-mod app;
-mod cli;
-mod net_handler;
-mod tui;
-mod commands;
-
-use crate::cli::Args;
-use better_panic::Settings;
-use clap::Parser;
-use crossterm::execute;
-use crossterm::terminal::*;
 use ratatui::prelude::*;
-use std::io;
-use std::io::stdout;
-use crate::app::App;
 
-pub fn initialize_panic_handler() {
-    std::panic::set_hook(Box::new(|panic_info| {
-        execute!(std::io::stderr(), crossterm::terminal::LeaveAlternateScreen).unwrap();
-        disable_raw_mode().unwrap();
-        Terminal::new(CrosstermBackend::new(stdout())).unwrap().show_cursor().unwrap();
-        Settings::auto()
-            .most_recent_first(true)
-            .lineno_suffix(true)
-            .create_panic_handler()(panic_info);
-    }));
-}
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::ExecutableCommand;
 
-fn main() -> io::Result<()> {
-    initialize_panic_handler();
-    Args::parse();
-    rayon::ThreadPoolBuilder::new().num_threads(3).build_global().unwrap();
+use crate::tui::app::App;
+
+mod tui;
+mod net;
+
+fn main() -> Result<()>  {
+    let args: Vec<String> = env::args().collect();
+    
+    let default_addr = String::from("127.0.0.1");
+    
+    let address = args.get(1).unwrap_or(&default_addr);
+    let port: u16 = args.get(2).map_or(8080, |p| p.parse().unwrap_or(8080));
+
+    let host = (address.clone(), port);
+
+
     enable_raw_mode()?;
-    let mut stdout = stdout();
-    execute!(stdout, EnterAlternateScreen)?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
+
+    let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
+
+    stdout().execute(EnterAlternateScreen)?;
     terminal.clear()?;
+
     let app = App::default();
-    app.run(&mut terminal);
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+    app.run(&mut terminal, host);
+
+    stdout().execute(LeaveAlternateScreen)?;
     disable_raw_mode()?;
-    terminal.show_cursor()?;
     Ok(())
 }
