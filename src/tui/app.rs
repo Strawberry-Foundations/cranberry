@@ -82,6 +82,8 @@ impl App {
 
 
         let (r_server, w_server) = (stream.try_clone().unwrap(), stream.try_clone().unwrap());
+        
+        let keep_alive_stream = stream.try_clone().unwrap();
 
         let r_server = IncomingPacketStream::wrap(r_server);
         let w_server = OutgoingPacketStream::wrap(w_server);
@@ -90,6 +92,8 @@ impl App {
 
         std::thread::spawn(|| { net::recv::recv(r_server, tx_recv, utx, state_clone) });
         std::thread::spawn(|| { net::send::send(w_server, rx_send, rx) });
+
+        std::thread::spawn(|| { net::keep_alive::keep_alive(keep_alive_stream) });
 
         self.selected_text_field = String::from("username");
 
