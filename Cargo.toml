@@ -9,7 +9,7 @@ edition = "2021"
 ratatui = "0.26.1"
 crossterm = "0.27.0"
 tui-textarea = "0.4.0"
-stblib = { path = "/home/julian/Projekte/stblib-rust", features = ["stbchat-sync"] }
+stblib = { version = "0.5.5", features = ["stbchat-sync"] }
 tokio = { version = "1.36.0", features = ["full"] }
 ansi-to-tui = "4.0.0"
 
