@@ -9,9 +9,9 @@ edition = "2021"
 ratatui = "0.26.1"
 crossterm = "0.27.0"
 tui-textarea = "0.4.0"
-stblib = { version = "0.5.5", features = ["stbchat-sync"] }
+stblib = { version = "0.5.8", features = ["stbchat-sync"] }
 tokio = { version = "1.36.0", features = ["full"] }
-ansi-to-tui = "4.0.0"
+ansi-to-tui = "4.0.1"
 
 [profile.release]
 opt-level = 'z'
