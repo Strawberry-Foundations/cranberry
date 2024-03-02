@@ -83,7 +83,7 @@ impl App {
 
         let (r_server, w_server) = (stream.try_clone().unwrap(), stream.try_clone().unwrap());
         
-        let keep_alive_stream = stream.try_clone().unwrap();
+        let keep_alive_stream = OutgoingPacketStream::wrap(stream.try_clone().unwrap());
 
         let r_server = IncomingPacketStream::wrap(r_server);
         let w_server = OutgoingPacketStream::wrap(w_server);
