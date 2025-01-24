@@ -1,17 +1,18 @@
+use std::io::stdout;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use std::net::TcpStream;
 use std::sync::mpsc::{channel};
 
-use crossterm::event;
+use crossterm::{event, ExecutableCommand};
 use crossterm::event::{Event, KeyCode};
-
+use crossterm::terminal::{disable_raw_mode, LeaveAlternateScreen};
 use ratatui::backend::Backend;
 use ratatui::style::{Color, Style};
 use ratatui::Terminal;
 use ratatui::widgets::{Block, Borders};
 
-use stblib::stbm::stbchat::net::{IncomingPacketStream, OutgoingPacketStream};
+use stblib::stbchat::net::{IncomingPacketStream, OutgoingPacketStream};
 
 use tui_textarea::TextArea;
 
@@ -81,6 +82,8 @@ impl App {
         let stream = match TcpStream::connect(host) {
             Ok(tcp_stream) => tcp_stream,
             Err(_) => {
+                stdout().execute(LeaveAlternateScreen).unwrap();
+                disable_raw_mode().unwrap();
                 eprintln!("Server {}:{} is unreachable. Check if the server is online.", self.address, self.port);
                 std::process::exit(1);
             }
