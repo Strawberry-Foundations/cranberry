@@ -10,6 +10,7 @@ use crate::tui::app::App;
 
 mod tui;
 mod net;
+mod util;
 
 fn main() -> Result<()>  {
     let args: Vec<String> = env::args().collect();
@@ -32,7 +33,6 @@ fn main() -> Result<()>  {
     let app = App::default();
     app.run(&mut terminal, host);
 
-    stdout().execute(LeaveAlternateScreen)?;
-    disable_raw_mode()?;
+    util::terminal::cleanup();
     Ok(())
 }
