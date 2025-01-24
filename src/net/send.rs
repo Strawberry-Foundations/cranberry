@@ -1,8 +1,8 @@
 use std::net::TcpStream;
 use std::sync::mpsc::Receiver;
 
-use stblib::stbm::stbchat::net::OutgoingPacketStream;
-use stblib::stbm::stbchat::packet::ServerPacket;
+use stblib::stbchat::net::OutgoingPacketStream;
+use stblib::stbchat::packet::ServerPacket;
 
 use crate::tui::app::AppEvent;
 

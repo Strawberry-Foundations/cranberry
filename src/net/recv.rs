@@ -2,8 +2,8 @@ use std::sync::Arc;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
-use stblib::stbm::stbchat::net::IncomingPacketStream;
-use stblib::stbm::stbchat::packet::ClientPacket;
+use stblib::stbchat::net::IncomingPacketStream;
+use stblib::stbchat::packet::ClientPacket;
 
 
 use crate::tui::app::{AppEvent, AppState, Views};

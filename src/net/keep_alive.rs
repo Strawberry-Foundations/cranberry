@@ -1,7 +1,7 @@
 use std::net::TcpStream;
 use stblib::colors::{BOLD, C_RESET, RED};
-use stblib::stbm::stbchat::net::OutgoingPacketStream;
-use stblib::stbm::stbchat::packet::ServerPacket;
+use stblib::stbchat::net::OutgoingPacketStream;
+use stblib::stbchat::packet::ServerPacket;
 
 pub fn keep_alive(mut server: OutgoingPacketStream<TcpStream>) {
     loop {
