@@ -78,8 +78,13 @@ impl App {
 
         let host = (self.address.clone(), self.port);
 
-        let stream = TcpStream::connect(host).unwrap();
-
+        let stream = match TcpStream::connect(host) {
+            Ok(tcp_stream) => tcp_stream,
+            Err(_) => {
+                eprintln!("Server unreachable.");
+                std::process::exit(1);
+            }
+        };
 
         let (r_server, w_server) = (stream.try_clone().unwrap(), stream.try_clone().unwrap());
         
