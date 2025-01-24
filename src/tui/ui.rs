@@ -1,15 +1,21 @@
-use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
+use ratatui::Frame;
 
-use tui_textarea::TextArea;
 use ansi_to_tui::IntoText;
+use tui_textarea::TextArea;
 
 use crate::tui::app::{App, Views};
 
 impl App {
-    pub fn main_ui(&mut self, frame: &mut Frame, input: &mut TextArea, username_input: &mut TextArea, password_input: &mut TextArea) {
+    pub fn main_ui(
+        &mut self,
+        frame: &mut Frame,
+        input: &mut TextArea,
+        username_input: &mut TextArea,
+        password_input: &mut TextArea,
+    ) {
         let area = frame.size();
 
         let layout = Layout::default()
@@ -30,18 +36,21 @@ impl App {
         let selected = self.selected;
         let messages_len = { self.state.read().unwrap().messages.len() };
 
-
         // list_state.select(selected);
 
         list_state.select(Some(messages_len));
-        
 
-        let view_messages: Vec<ListItem> = self.state.read().unwrap().messages.clone()
+        let view_messages: Vec<ListItem> = self
+            .state
+            .read()
+            .unwrap()
+            .messages
+            .clone()
             .iter()
             .enumerate()
             .map(|(i, m)| {
                 if selected == Some(messages_len - i) {
-                    return ListItem::new(format!("* {m}").into_text().unwrap().bold().italic())
+                    return ListItem::new(format!("* {m}").into_text().unwrap().bold().italic());
                 }
 
                 ListItem::new(m.into_text().unwrap())
@@ -53,22 +62,16 @@ impl App {
 
         frame.render_stateful_widget(message_list, layout[1], &mut list_state);
 
-
         match self.state.read().unwrap().current_view {
             Views::Menu => {
                 let area = Self::centered_rect(50, 45, area);
 
-                let menu = Block::default()
-                    .title("Menu")
-                    .borders(Borders::ALL);
+                let menu = Block::default().title("Menu").borders(Borders::ALL);
 
                 let menu_layout = Layout::default()
                     .direction(Direction::Vertical)
                     .margin(1)
-                    .constraints([
-                        Constraint::Length(1),
-                        Constraint::Min(0),
-                    ])
+                    .constraints([Constraint::Length(1), Constraint::Min(0)])
                     .split(area);
 
                 let text = Paragraph::new("Press 'q' to exit Strawberry Chat")
@@ -82,9 +85,7 @@ impl App {
             Views::Authentication => {
                 let area = Self::centered_rect(50, 45, area);
 
-                let login = Block::default()
-                    .title("Login")
-                    .borders(Borders::ALL);
+                let login = Block::default().title("Login").borders(Borders::ALL);
 
                 let login_layout = Layout::default()
                     .direction(Direction::Vertical)
@@ -107,7 +108,7 @@ impl App {
                 frame.render_widget(username_input.widget(), login_layout[2]);
                 frame.render_widget(password_input.widget(), login_layout[3]);
             }
-            _ => { }
+            _ => {}
         }
     }
 
