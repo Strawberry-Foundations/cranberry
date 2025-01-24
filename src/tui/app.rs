@@ -81,7 +81,7 @@ impl App {
         let stream = match TcpStream::connect(host) {
             Ok(tcp_stream) => tcp_stream,
             Err(_) => {
-                eprintln!("Server unreachable.");
+                eprintln!("Server {}:{} is unreachable. Check if the server is online.", self.address, self.port);
                 std::process::exit(1);
             }
         };
